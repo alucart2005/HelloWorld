@@ -1,0 +1,12 @@
+{
+  "name": "helloworld",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix soroban-hello-world/frontend run dev",
+    "build": "npm --prefix soroban-hello-world/frontend run build",
+    "lint": "npm --prefix soroban-hello-world/frontend run lint",
+    "test": "cargo test --manifest-path soroban-hello-world/Cargo.toml",
+    "contract:build": "cd soroban-hello-world && stellar contract build",
+    "audit": "npm --prefix soroban-hello-world/frontend audit --audit-level=high"
+  }
+}
