@@ -1,12 +1,4 @@
 import { useState } from 'react'
-import {
-  StellarWalletsKit,
-  Networks,
-} from '@creit.tech/stellar-wallets-kit'
-import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter'
-import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull'
-import { LobstrModule } from '@creit.tech/stellar-wallets-kit/modules/lobstr'
-import { Contract, rpc, nativeToScVal, scValToNative, xdr, TransactionBuilder } from '@stellar/stellar-sdk'
 
 const CONTRACT_ID =
   import.meta.env.VITE_CONTRACT_ID || 'CBDKHW25QO3IMWWXVLBHHPMRLMFS7W7HCSYOY4A4Z2HMKAIKPZJMSCQE'
@@ -15,10 +7,33 @@ const NETWORK_PASSPHRASE =
   import.meta.env.VITE_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015'
 const FEE = '100'
 
-StellarWalletsKit.init({
-  network: Networks.TESTNET,
-  modules: [new FreighterModule(), new xBullModule(), new LobstrModule()],
-})
+type StellarSdkModule = typeof import('@stellar/stellar-sdk')
+
+let sdkModule: Promise<StellarSdkModule> | null = null
+const loadSdk = (): Promise<StellarSdkModule> => {
+  sdkModule ??= import('@stellar/stellar-sdk')
+  return sdkModule
+}
+
+type WalletKit = (typeof import('@creit.tech/stellar-wallets-kit'))['StellarWalletsKit']
+
+let walletKit: Promise<WalletKit> | null = null
+const loadWalletKit = (): Promise<WalletKit> => {
+  walletKit ??= (async () => {
+    const [kit, freighter, xbull, lobstr] = await Promise.all([
+      import('@creit.tech/stellar-wallets-kit'),
+      import('@creit.tech/stellar-wallets-kit/modules/freighter'),
+      import('@creit.tech/stellar-wallets-kit/modules/xbull'),
+      import('@creit.tech/stellar-wallets-kit/modules/lobstr'),
+    ])
+    kit.StellarWalletsKit.init({
+      network: kit.Networks.TESTNET,
+      modules: [new freighter.FreighterModule(), new xbull.xBullModule(), new lobstr.LobstrModule()],
+    })
+    return kit.StellarWalletsKit
+  })()
+  return walletKit
+}
 
 export default function App() {
   const [publicKey, setPublicKey] = useState<string>('')
@@ -28,20 +43,18 @@ export default function App() {
 
   const connectWallet = async () => {
     try {
-      await StellarWalletsKit.authModal({
-      }).then(async ({ address }) => {
-        setPublicKey(address)
-      }).catch((e) => {
-        console.error(e)
-      })
-    } catch (err) {
-      console.error(err)
+      const kit = await loadWalletKit()
+      const { address } = await kit.authModal({})
+      setPublicKey(address)
+    } catch (e) {
+      console.error(e)
     }
   }
 
   const disconnectWallet = async () => {
     try {
-      await StellarWalletsKit.disconnect()
+      const kit = await loadWalletKit()
+      await kit.disconnect()
     } catch (e) {
       console.error(e)
     }
@@ -55,6 +68,8 @@ export default function App() {
     setResult('')
 
     try {
+      const { Contract, rpc, nativeToScVal, scValToNative, xdr, TransactionBuilder } = await loadSdk()
+      const kit = await loadWalletKit()
       const server = new rpc.Server(RPC_URL)
       const contract = new Contract(CONTRACT_ID)
       const account = await server.getAccount(publicKey)
@@ -63,19 +78,14 @@ export default function App() {
         fee: FEE,
         networkPassphrase: NETWORK_PASSPHRASE,
       })
-        .addOperation(
-          contract.call(
-            'hello',
-            nativeToScVal(to, { type: 'string' })
-          )
-        )
+        .addOperation(contract.call('hello', nativeToScVal(to, { type: 'string' })))
         .setTimeout(30)
         .build()
 
       const sim = await server.simulateTransaction(tx)
       if (rpc.Api.isSimulationSuccess(sim)) {
         const prepared = rpc.assembleTransaction(tx, sim).build()
-        const { signedTxXdr } = await StellarWalletsKit.signTransaction(prepared.toXDR(), {
+        const { signedTxXdr } = await kit.signTransaction(prepared.toXDR(), {
           networkPassphrase: NETWORK_PASSPHRASE,
         })
 
@@ -91,8 +101,12 @@ export default function App() {
           }
           if (getRes.status === 'SUCCESS') {
             if ('resultMetaXdr' in getRes && getRes.resultMetaXdr) {
-              const meta = xdr.TransactionMeta.fromXDR(getRes.resultMetaXdr as unknown as string, 'base64') as any
-              const sorobanMeta = meta?.sorobanMeta?.() || meta?.value?.sorobanMeta?.() || meta?.value?.v3?.()?.sorobanMeta?.()
+              const meta = xdr.TransactionMeta.fromXDR(
+                getRes.resultMetaXdr as unknown as string,
+                'base64'
+              ) as any
+              const sorobanMeta =
+                meta?.sorobanMeta?.() || meta?.value?.sorobanMeta?.() || meta?.value?.v3?.()?.sorobanMeta?.()
               if (sorobanMeta) {
                 const scval = sorobanMeta.returnValue?.() || sorobanMeta.returnValue
                 if (scval) {
@@ -126,6 +140,7 @@ export default function App() {
     setResult('')
 
     try {
+      const { Contract, rpc, nativeToScVal, scValToNative, TransactionBuilder } = await loadSdk()
       const server = new rpc.Server(RPC_URL)
       const contract = new Contract(CONTRACT_ID)
       const account = await server.getAccount(publicKey)
@@ -175,11 +190,17 @@ export default function App() {
             </div>
             <div className="flex gap-2">
               {!publicKey ? (
-                <button onClick={connectWallet} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+                <button
+                  onClick={connectWallet}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                >
                   Connect Wallet
                 </button>
               ) : (
-                <button onClick={disconnectWallet} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                <button
+                  onClick={disconnectWallet}
+                  className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+                >
                   Disconnect
                 </button>
               )}
@@ -219,9 +240,7 @@ export default function App() {
             </div>
           )}
 
-          <div className="text-xs text-gray-500 mt-2">
-            Contract: {CONTRACT_ID}
-          </div>
+          <div className="text-xs text-gray-500 mt-2">Contract: {CONTRACT_ID}</div>
         </div>
       </div>
     </div>

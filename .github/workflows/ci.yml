@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract (Rust / Soroban)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: soroban-hello-world
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install wasm32v1-none target
+        run: rustup target add wasm32v1-none
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            soroban-hello-world/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('soroban-hello-world/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Stellar CLI
+        run: |
+          curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh -s -- --user
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Unit tests
+        run: cargo test
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build WASM
+        run: stellar contract build
+
+      - name: Upload WASM
+        uses: actions/upload-artifact@v4
+        with:
+          name: hello-world-wasm
+          path: soroban-hello-world/target/wasm32v1-none/release/*.wasm
+          if-no-files-found: error
+
+  frontend:
+    name: Frontend (TypeScript / Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: soroban-hello-world/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: soroban-hello-world/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck and build
+        run: npm run build
+
+      - name: Audit (fail on high/critical)
+        run: npm audit --audit-level=high
