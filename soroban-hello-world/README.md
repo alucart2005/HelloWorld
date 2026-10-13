@@ -6,7 +6,7 @@
 
 [![Soroban](https://img.shields.io/badge/Soroban-SDK%2028-1B1B1B?logo=stellar&logoColor=white)](https://developers.stellar.org/docs/build/smart-contracts/overview)
 [![Rust](https://img.shields.io/badge/Rust-1.84%2B-orange?logo=rust&logoColor=white)](https://www.rust-lang.org/tools/install)
-[![CI](https://github.com/alucart2005/HelloWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/alucart2005/HelloWorld/actions/workflows/ci.yml)
+[![CI](https://github.com/alucart2005/HelloWorldWeb3/actions/workflows/ci.yml/badge.svg)](https://github.com/alucart2005/HelloWorldWeb3/actions/workflows/ci.yml)
 
 **[English](#en)** · **[Español](#es)** · **[Português](#pt)**
 

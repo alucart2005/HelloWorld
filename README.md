@@ -4,7 +4,7 @@
 
 **A full-stack Soroban reference project — on-chain contract, React dApp, testnet deployment and CI.**
 
-[![CI](https://github.com/alucart2005/HelloWorld/actions/workflows/ci.yml/badge.svg)](https://github.com/alucart2005/HelloWorld/actions/workflows/ci.yml)
+[![CI](https://github.com/alucart2005/HelloWorldWeb3/actions/workflows/ci.yml/badge.svg)](https://github.com/alucart2005/HelloWorldWeb3/actions/workflows/ci.yml)
 [![Soroban](https://img.shields.io/badge/Soroban-Testnet-1B1B1B?logo=stellar&logoColor=white)](https://developers.stellar.org/docs/build/smart-contracts/overview)
 [![Node](https://img.shields.io/badge/Node-24%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![Rust](https://img.shields.io/badge/Rust-1.84%2B-orange?logo=rust&logoColor=white)](https://www.rust-lang.org/tools/install)
@@ -71,7 +71,7 @@ rustup target add wasm32v1-none
 ### Quick start
 
 ```bash
-git clone https://github.com/alucart2005/HelloWorld.git
+git clone https://github.com/alucart2005/HelloWorldWeb3.git
 cd HelloWorld
 
 # Frontend dependencies (Node 24 — see .nvmrc)
@@ -238,7 +238,7 @@ rustup target add wasm32v1-none
 ### Inicio rápido
 
 ```bash
-git clone https://github.com/alucart2005/HelloWorld.git
+git clone https://github.com/alucart2005/HelloWorldWeb3.git
 cd HelloWorld
 
 # Dependencias del frontend (Node 24 — ver .nvmrc)
@@ -403,7 +403,7 @@ rustup target add wasm32v1-none
 ### Início rápido
 
 ```bash
-git clone https://github.com/alucart2005/HelloWorld.git
+git clone https://github.com/alucart2005/HelloWorldWeb3.git
 cd HelloWorld
 
 # Dependências do frontend (Node 24 — ver .nvmrc)
