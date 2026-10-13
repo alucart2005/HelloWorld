@@ -1,32 +1,67 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React single-page dApp that talks to the `hello-world` contract on Soroban Testnet.
 
-Currently, two official plugins are available:
+See the [repository README](../../README.md) for the full documentation in English, Español and Português.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+| | |
+| --- | --- |
+| UI | React 19, TypeScript 6, Tailwind CSS 4 |
+| Tooling | Vite 8, oxlint, `tsc -b` |
+| Stellar | `@stellar/stellar-sdk` 17, `@creit.tech/stellar-wallets-kit` 2.7 |
+| Wallets | Freighter, xBull, Lobstr |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting started
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+# from the repository root (Node 24+ — see .nvmrc)
+node --version
+npm --prefix soroban-hello-world/frontend ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | start Vite with hot reload |
+| `npm run build` | `tsc -b` then production build |
+| `npm run lint` | run oxlint |
+| `npm run preview` | serve the production build locally |
+
+## Environment variables
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `VITE_CONTRACT_ID` | deployed contract address | `CBDKHW25…MSCQE` |
+| `VITE_SOROBAN_RPC_URL` | Soroban RPC endpoint | `https://soroban-testnet.stellar.org` |
+| `VITE_NETWORK_PASSPHRASE` | passphrase used when signing | `Test SDF Network ; September 2015` |
+
+`.env` is git-ignored; only `.env.example` is tracked. Every value has a hard-coded fallback, so the app runs without an `.env` file.
+
+## How a call works
+
+1. `loadSdk()` and `loadWalletKit()` lazily import the Stellar SDK and the wallet kit on first use — the 794 kB vendor chunk and each wallet module are split into their own files, keeping the initial payload at 226 kB (71 kB gzipped).
+2. The transaction is built against the connected account and **simulated** through Soroban RPC.
+3. On success, the prepared transaction is **signed** in the wallet and submitted.
+4. The result is polled until it leaves `NOT_FOUND`, then the Soroban return value is decoded from `resultMetaXdr` and rendered.
+
+Both paths (`simulate` and `call`) are independent buttons in `src/App.tsx`.
+
+## Layout
+
+```text
+frontend/
+├── index.html
+├── vite.config.ts
+├── .env.example
+└── src/
+    ├── main.tsx        # React entry point
+    ├── App.tsx         # UI + wallet and RPC logic
+    ├── App.css
+    └── index.css
+```
