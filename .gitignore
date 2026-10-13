@@ -1,0 +1,12 @@
+node_modules
+
+# secrets / local env (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.~lock*
+.DS_Store
+*.swp
+*.log
