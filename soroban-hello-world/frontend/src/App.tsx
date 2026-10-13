@@ -175,7 +175,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Soroban Hello World</h1>
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
+          Soroban Hello World
+        </h1>
 
         <div className="bg-white rounded-xl shadow p-6 space-y-4">
           <div className="flex items-center justify-between gap-3">
