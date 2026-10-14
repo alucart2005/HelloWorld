@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import AnimatedBackground from './components/AnimatedBackground'
 
 const CONTRACT_ID =
   import.meta.env.VITE_CONTRACT_ID || 'CBDKHW25QO3IMWWXVLBHHPMRLMFS7W7HCSYOY4A4Z2HMKAIKPZJMSCQE'
@@ -172,78 +173,132 @@ export default function App() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="max-w-xl mx-auto p-6">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-black mb-6">
-          Soroban Hello World
-        </h1>
+  const trackPointer = (e: React.PointerEvent) => {
+    const el = document.getElementById('spotlight')
+    if (!el) return
+    el.style.setProperty('--mx', `${e.clientX}px`)
+    el.style.setProperty('--my', `${e.clientY}px`)
+  }
 
-        <div className="bg-white rounded-xl shadow p-6 space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm">
-              {publicKey ? (
-                <span className="text-green-600">
-                  Connected: {publicKey.slice(0, 6)}...{publicKey.slice(-6)}
-                </span>
-              ) : (
-                <span className="text-gray-500">Not connected</span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {!publicKey ? (
-                <button
-                  onClick={connectWallet}
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  Connect Wallet
-                </button>
-              ) : (
-                <button
-                  onClick={disconnectWallet}
-                  className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-                >
-                  Disconnect
-                </button>
-              )}
-            </div>
+  return (
+    <div className="relative min-h-screen text-slate-200" onPointerMove={trackPointer}>
+      <AnimatedBackground />
+      <div id="spotlight" className="spotlight" />
+
+      <div className="relative mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-5 py-12">
+        <header className="fade-up mb-8 text-center" style={{ animationDelay: '60ms' }}>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium tracking-wide text-slate-300 backdrop-blur-md">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            Stellar Testnet · Soroban
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">to</label>
+          <h1 className="gradient-text text-4xl font-extrabold tracking-tight sm:text-5xl">
+            Soroban Hello World
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:text-base">
+            Invoca un contrato inteligente <span className="text-orange-400">Rust</span> en cadena
+            desde tu navegador con Web3.
+          </p>
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            {['Rust', 'Soroban', 'React 19', 'Stellar SDK'].map((t) => (
+              <span key={t} className="chip rounded-full px-3 py-1 text-xs text-slate-300">
+                {t}
+              </span>
+            ))}
+          </div>
+        </header>
+
+        <div
+          className="glass-card fade-up rounded-3xl p-6 sm:p-8"
+          style={{ animationDelay: '180ms' }}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              {publicKey ? (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+                  <span className="font-mono text-emerald-300">
+                    {publicKey.slice(0, 6)}...{publicKey.slice(-6)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-slate-500" />
+                  <span className="text-slate-400">Wallet not connected</span>
+                </>
+              )}
+            </div>
+
+            {!publicKey ? (
+              <button
+                onClick={connectWallet}
+                className="btn-primary rounded-xl px-4 py-2 text-sm font-semibold text-white"
+              >
+                Connect Wallet
+              </button>
+            ) : (
+              <button
+                onClick={disconnectWallet}
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-white/25 hover:bg-white/10"
+              >
+                Disconnect
+              </button>
+            )}
+          </div>
+
+          <div className="mt-6 space-y-2">
+            <label htmlFor="to-input" className="text-sm font-medium text-slate-300">
+              to
+            </label>
             <input
+              id="to-input"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/30"
               placeholder="opencode"
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="mt-6 flex gap-3">
             <button
               onClick={simulateHello}
               disabled={!publicKey || loading}
-              className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="flex-1 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:border-emerald-400/40 hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Simulate
             </button>
             <button
               onClick={callHello}
               disabled={!publicKey || loading}
-              className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="btn-primary flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
+              {loading && <span className="spinner" />}
               {loading ? 'Calling...' : 'Call hello(to)'}
             </button>
           </div>
 
           {result && (
-            <div className="mt-4 p-4 bg-gray-900 text-green-400 rounded-lg font-mono text-sm overflow-auto">
+            <div className="fade-up mt-5 overflow-auto rounded-xl border border-emerald-400/15 bg-black/45 p-4 font-mono text-sm text-emerald-300">
               {result}
             </div>
           )}
 
-          <div className="text-xs text-gray-500 mt-2">Contract: {CONTRACT_ID}</div>
+          <div className="mt-5 truncate border-t border-white/5 pt-4 font-mono text-[11px] text-slate-500">
+            Contract: {CONTRACT_ID}
+          </div>
         </div>
+
+        <footer
+          className="fade-up mt-8 text-center text-xs text-slate-500"
+          style={{ animationDelay: '300ms' }}
+        >
+          Built with Rust · Soroban · Stellar Protocol
+        </footer>
       </div>
     </div>
   )
